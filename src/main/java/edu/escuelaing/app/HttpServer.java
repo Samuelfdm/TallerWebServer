@@ -49,7 +49,7 @@ public class HttpServer {
                     }
                 } else if (resourcePath.startsWith("/app/hello")) {
                     String response = helloRestService(resourcePath);
-                    sendJsonResponse(new PrintWriter(out, true), response);
+                    sendJsonResponse(new PrintWriter(out, true), response); // Usamos PrintWriter para JSON
                 } else {
                     sendErrorResponse(new PrintWriter(out, true), 404, "Not Found");
                 }
@@ -58,10 +58,11 @@ public class HttpServer {
                 System.err.println("Error en la comunicación con el cliente: " + e.getMessage());
             }
         }
+
         serverSocket.close();
     }
 
-    // Función para servir archivos estáticos como datos binarios
+    //Función para servir archivos estáticos como datos binarios
     private static void serveStaticFile(File file, OutputStream out) throws IOException {
         String contentType = getContentType(file.getName());
         out.write(("HTTP/1.1 200 OK\r\n").getBytes());
@@ -72,25 +73,25 @@ public class HttpServer {
             byte[] buffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = fis.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead); // Escribe los bytes directamente
+                out.write(buffer, 0, bytesRead); //Escribe los bytes directamente
             }
         }
     }
 
-    // Función para obtener el tipo de contenido
+    //Función para obtener el Content-Type
     private static String getContentType(String fileName) {
-        if (fileName.endsWith(".html") || fileName.endsWith(".htm")) {
+        if (fileName.endsWith(".html")) {
             return "text/html";
         } else if (fileName.endsWith(".css")) {
             return "text/css";
         } else if (fileName.endsWith(".js")) {
-            return "text/javascript";
+            return "application/javascript";
         } else if (fileName.endsWith(".png")) {
             return "image/png";
         } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
             return "image/jpeg";
         } else {
-            return "application/octet-stream"; // Tipo genérico para otros archivos
+            return "application/octet-stream"; //Tipo genérico para otros archivos
         }
     }
 
@@ -109,7 +110,7 @@ public class HttpServer {
     }
 
     private static String helloRestService(String path) {
-        // Extrae el parámetro 'name' de la URL
+        // Extrae el parámetro name de la URL
         String name = "";
         if (path.contains("?name=")) {
             name = path.substring(path.indexOf("?name=") + 6);

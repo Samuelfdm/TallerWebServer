@@ -12,16 +12,14 @@ function agregarElemento(tipo, texto) {
 
 // Llamar a las funciones cuando se carga la página
 window.onload = function () {
-    mostrarMensaje();
-
     // Agregar un botón para cambiar el color de fondo
     const botonColor = document.createElement("button");
-    botonColor.textContent = "Cambiar color de fondo";
+    botonColor.textContent = "Cambiar color de fondo :)";
     botonColor.onclick = function () {
-        cambiarColorDeFondo("lightblue");
+        cambiarColorDeFondo("#5f818d");
     };
     document.body.appendChild(botonColor);
 
     // Agregar un párrafo con texto
-    agregarElemento("p", "Párrafo agregado desde javascript.js");
+    agregarElemento("p", "Este es un párrafo agregado desde javascript.js");
 };
