@@ -1,14 +1,11 @@
 package edu.escuelaing.app;
-/**
- *
- * @author samuel.diaz-m
- */
+
 import java.net.*;
 import java.io.*;
 
 public class HttpServer {
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
         try {
             serverSocket = new ServerSocket(35000);
@@ -20,107 +17,103 @@ public class HttpServer {
         boolean running = true;
 
         while (running) {
-            Socket clientSocket = null;
-            try {
+            try (Socket clientSocket = serverSocket.accept();
+                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                 OutputStream out = clientSocket.getOutputStream()) {
+
                 System.out.println("Listo para recibir ...");
-                clientSocket = serverSocket.accept();
+
+                String inputLine;
+                boolean isFirstLine = true;
+                String resourcePath = "";
+
+                while ((inputLine = in.readLine()) != null) {
+                    if (isFirstLine) {
+                        resourcePath = inputLine.split(" ")[1];
+                        isFirstLine = false;
+                    }
+                    System.out.println("Received: " + inputLine);
+                    if (inputLine.isEmpty()) {
+                        break;
+                    }
+                }
+
+                File file = new File("." + resourcePath);
+
+                if (file.exists() && file.isFile()) {
+                    try {
+                        serveStaticFile(file, out);
+                    } catch (IOException e) {
+                        System.err.println("Error al servir el archivo: " + e.getMessage());
+                        sendErrorResponse(new PrintWriter(out, true), 500, "Internal Server Error");
+                    }
+                } else if (resourcePath.startsWith("/app/hello")) {
+                    String response = helloRestService(resourcePath);
+                    sendJsonResponse(new PrintWriter(out, true), response);
+                } else {
+                    sendErrorResponse(new PrintWriter(out, true), 404, "Not Found");
+                }
+
             } catch (IOException e) {
-                System.err.println("Accept failed.");
-                System.exit(1);
+                System.err.println("Error en la comunicación con el cliente: " + e.getMessage());
             }
-
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String inputLine, outputLine;
-
-            boolean isFirstLine = true;
-            String file = "";
-
-            while ((inputLine = in.readLine()) != null) {
-                if (isFirstLine) {
-                    file = inputLine.split(" ")[1];
-                    isFirstLine = false;
-                }
-                System.out.println("Received: " + inputLine);
-                if (!in.ready()) {
-                    break;
-                }
-            }
-
-            URI resourceuri = new URI(file);
-            System.out.println("URI: "+resourceuri);
-
-            if(resourceuri.getPath().startsWith("/app/hello")){
-                outputLine = helloRestService(resourceuri.getPath(), resourceuri.getQuery());
-                out.println(outputLine);
-            } else {
-                outputLine = "HTTP/1.1 200 OK\r\n"
-                        + "Content-Type: text/html\r\n"
-                        + "\r\n"
-                        + "<!DOCTYPE html>\n"
-                        + "<html>\n"
-                        + "    <head>\n"
-                        + "        <title>Form Example</title>\n"
-                        + "        <meta charset=\"UTF-8\">\n"
-                        + "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-                        + "    </head>\n"
-                        + "    <body>\n"
-                        + "        <h1>Form with GET</h1>\n"
-                        + "        <form action=\"/hello\">\n"
-                        + "            <label for=\"name\">Name:</label><br>\n"
-                        + "            <input type=\"text\" id=\"name\" name=\"name\" value=\"John\"><br><br>\n"
-                        + "            <input type=\"button\" value=\"Submit\" onclick=\"loadGetMsg()\">\n"
-                        + "        </form> \n"
-                        + "        <div id=\"getrespmsg\"></div>\n"
-                        + "\n"
-                        + "        <script>\n"
-                        + "            function loadGetMsg() {\n"
-                        + "                let nameVar = document.getElementById(\"name\").value;\n"
-                        + "                const xhttp = new XMLHttpRequest();\n"
-                        + "                xhttp.onload = function() {\n"
-                        + "                    document.getElementById(\"getrespmsg\").innerHTML =\n"
-                        + "                    this.responseText;\n"
-                        + "                }\n"
-                        + "                xhttp.open(\"GET\", \"/app/hello?name=\"+nameVar);\n"
-                        + "                xhttp.send();\n"
-                        + "            }\n"
-                        + "        </script>\n"
-                        + "\n"
-                        + "        <h1>Form with POST</h1>\n"
-                        + "        <form action=\"/app/hello\">\n"
-                        + "            <label for=\"postname\">Name:</label><br>\n"
-                        + "            <input type=\"text\" id=\"postname\" name=\"name\" value=\"John\"><br><br>\n"
-                        + "            <input type=\"button\" value=\"Submit\" onclick=\"loadPostMsg(postname)\">\n"
-                        + "        </form>\n"
-                        + "        \n"
-                        + "        <div id=\"postrespmsg\"></div>\n"
-                        + "        \n"
-                        + "        <script>\n"
-                        + "            function loadPostMsg(name){\n"
-                        + "                let url = \"/app/hello?name=\" + name.value;\n"
-                        + "\n"
-                        + "                fetch (url, {method: 'POST'})\n"
-                        + "                    .then(x => x.text())\n"
-                        + "                    .then(y => document.getElementById(\"postrespmsg\").innerHTML = y);\n"
-                        + "            }\n"
-                        + "        </script>\n"
-                        + "    </body>\n"
-                        + "</html>";
-                out.println(outputLine);
-            }
-            out.close();
-            in.close();
-            clientSocket.close();
         }
         serverSocket.close();
     }
 
-    private static String helloRestService(String path, String query){
-        System.out.println("Query: " + query);
-        String response = "HTTP/1.1 200 OK\r\n"
-                + "Content-Type: application/json\r\n"
-                + "\r\n"
-                + "{\"name\":" +query+ "}";
-        return response;
+    // Función para servir archivos estáticos como datos binarios
+    private static void serveStaticFile(File file, OutputStream out) throws IOException {
+        String contentType = getContentType(file.getName());
+        out.write(("HTTP/1.1 200 OK\r\n").getBytes());
+        out.write(("Content-Type: " + contentType + "\r\n").getBytes());
+        out.write(("\r\n").getBytes());
+
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead); // Escribe los bytes directamente
+            }
+        }
+    }
+
+    // Función para obtener el tipo de contenido
+    private static String getContentType(String fileName) {
+        if (fileName.endsWith(".html") || fileName.endsWith(".htm")) {
+            return "text/html";
+        } else if (fileName.endsWith(".css")) {
+            return "text/css";
+        } else if (fileName.endsWith(".js")) {
+            return "text/javascript";
+        } else if (fileName.endsWith(".png")) {
+            return "image/png";
+        } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else {
+            return "application/octet-stream"; // Tipo genérico para otros archivos
+        }
+    }
+
+    private static void sendJsonResponse(PrintWriter out, String response) {
+        out.println("HTTP/1.1 200 OK");
+        out.println("Content-Type: application/json");
+        out.println();
+        out.println(response);
+    }
+
+    private static void sendErrorResponse(PrintWriter out, int statusCode, String message) {
+        out.println("HTTP/1.1 " + statusCode + " " + message);
+        out.println("Content-Type: text/html");
+        out.println();
+        out.println("<!DOCTYPE html><html><body><h1>" + statusCode + " " + message + "</h1></body></html>");
+    }
+
+    private static String helloRestService(String path) {
+        // Extrae el parámetro 'name' de la URL
+        String name = "";
+        if (path.contains("?name=")) {
+            name = path.substring(path.indexOf("?name=") + 6);
+        }
+        return "{\"name\":\"" + name + "\"}"; // Devuelve el nombre en formato JSON
     }
 }
