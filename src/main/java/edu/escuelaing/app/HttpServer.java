@@ -1,4 +1,4 @@
-package edu.escuelaing.app.urlproject;
+package edu.escuelaing.app;
 /**
  *
  * @author samuel.diaz-m
