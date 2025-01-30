@@ -37,8 +37,8 @@ public class HttpServer {
                         break;
                     }
                 }
-
-                File file = new File("." + resourcePath);
+                System.out.println("ESTE ES EL RESOURCEPATH: " + resourcePath);
+                File file = new File("./src/main/resources/static/" + resourcePath);
 
                 if (file.exists() && file.isFile()) {
                     try {
@@ -49,7 +49,7 @@ public class HttpServer {
                     }
                 } else if (resourcePath.startsWith("/app/hello")) {
                     String response = helloRestService(resourcePath);
-                    sendJsonResponse(new PrintWriter(out, true), response); // Usamos PrintWriter para JSON
+                    sendJsonResponse(new PrintWriter(out, true), response);
                 } else {
                     sendErrorResponse(new PrintWriter(out, true), 404, "Not Found");
                 }
