@@ -11,15 +11,19 @@ Para instalar y ejecutar este proyecto, sigue los siguientes pasos:
    git clone https://github.com/Samuelfdm/TallerWebServer.git
    cd TallerWebServer
 
-2. **Compila el proyecto:**
+2. **Compila y empaqueta el proyecto:**
 Asegúrate de tener Maven instalado y ejecuta:
     ```bash
-    mvn clean install
+    mvn clean package
 
 3. **Ejecuta el servidor:**
-Después de compilar, ejecuta el servidor con:
+Después de compililar y empaquetar el proyecto, ejecuta el servidor con:
     ```bash
-    mvn exec:java -Dexec.mainClass="edu.escuelaing.app.HttpServer"
+    java -cp target/classes edu.escuelaing.app.HttpServer
+   
+    o tambien:
+   
+    java -cp target/TallerWebServer-1.0-SNAPSHOT.jar edu.escuelaing.app.HttpServer
 
 Ejecución
 ---------
@@ -123,3 +127,7 @@ See also the list of [contributors](https://github.com/Samuelfdm/TallerWebServer
 ## Licencia
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Agradecimientos
+
+* [Escuela Colombiana de Ingeniería: Julio Garavito](https://www.escuelaing.edu.co/es/)
