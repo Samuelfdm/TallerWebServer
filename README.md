@@ -1,88 +1,125 @@
-# Project Title
+# TallerWebServer
 
-One Paragraph of project description goes here
+Este proyecto es un servidor web básico escrito en Java que soporta múltiples solicitudes seguidas no concurrentes. El servidor es capaz de servir archivos estáticos como páginas HTML, archivos JavaScript, CSS e imágenes. Además, incluye un endpoint para la comunicación asíncrona con servicios REST en el backend.
 
-## Getting Started
+## Instalación
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+Para instalar y ejecutar este proyecto, sigue los siguientes pasos:
 
-### Prerequisites
+1. **Clona el repositorio:**:
+   ```bash
+   git clone https://github.com/Samuelfdm/TallerWebServer.git
+   cd TallerWebServer
 
-What things you need to install the software and how to install them
+2. **Compila el proyecto:**
+Asegúrate de tener Maven instalado y ejecuta:
+    ```bash
+    mvn clean install
 
-```
-Give examples
-```
+3. **Ejecuta el servidor:**
+Después de compilar, ejecuta el servidor con:
+    ```bash
+    mvn exec:java -Dexec.mainClass="edu.escuelaing.app.HttpServer"
 
-### Installing
+Ejecución
+---------
 
-A step by step series of examples that tell you how to get a development env running
+Una vez que el servidor esté en funcionamiento, puedes acceder a los recursos estáticos a través de tu navegador web. Por ejemplo:
 
-Say what the step will be
+*   **Página principal**: http://localhost:35000/prueba.html
 
-```
-Give the example
-```
+*   **Archivo JavaScript**: http://localhost:35000/javascript.js
 
-And repeat
+*   **Archivo CSS**: http://localhost:35000/style.css
 
-```
-until finished
-```
+*   **Imágenes PNG**: http://localhost:35000/images/imagen1.png
 
-End with an example of getting some data out of the system or using it for a little demo
+*   **Imágenes JPG**: http://localhost:35000/images/imagen2.jpg
 
-## Running the tests
+El servidor escucha en el puerto 35000 por defecto.
 
-Explain how to run the automated tests for this system
+Arquitectura
+------------
 
-### Break down into end to end tests
+El diseño del servidor sigue una arquitectura modular con las siguientes clases principales:
 
-Explain what these tests test and why
+*   **HttpServer**: Maneja el servidor y acepta conexiones entrantes.
 
-```
-Give an example
-```
+*   **RequestHandler**: Procesa las solicitudes HTTP y delega la respuesta adecuada.
 
-### And coding style tests
+*   **StaticFileHandler**: Se encarga de servir archivos estáticos desde el disco local.
 
-Explain what these tests test and why
+*   **ResponseHelper**: Maneja la construcción de respuestas HTTP.
 
-```
-Give an example
-```
+*   **HelloService**: Implementa la lógica para el endpoint /app/hello.
 
-## Deployment
 
-Add additional notes about how to deploy this on a live system
+### Diagrama de Flujo
 
-## Built With
+1.  El cliente realiza una solicitud HTTP al servidor.
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+2.  HttpServer acepta la conexión y pasa la solicitud a RequestHandler.
 
-## Contributing
+3.  RequestHandler determina si la solicitud es para un archivo estático o para el endpoint /app/hello.
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+4.  Si es un archivo estático, StaticFileHandler lee el archivo del disco y ResponseHelper construye la respuesta.
 
-## Versioning
+5.  Si es una solicitud al endpoint /app/hello, HelloService procesa la solicitud y genera una respuesta.
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
 
-## Authors
+Pruebas
+-------
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+Se han realizado pruebas unitarias para asegurar el correcto funcionamiento de cada componente. Las pruebas incluyen:
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+*   **Pruebas de HttpServer**: Verifican que el servidor pueda iniciar y aceptar conexiones.
 
-## License
+*   **Pruebas de RequestHandler**: Aseguran que las solicitudes HTTP sean procesadas correctamente.
+
+*   **Pruebas de StaticFileHandler**: Comprueban que los archivos estáticos sean servidos adecuadamente.
+
+*   **Pruebas de ResponseHelper**: Validan que las respuestas HTTP sean construidas correctamente.
+
+*   **Pruebas de HelloService**: Verifican que el endpoint /app/hello funcione como se espera.
+
+Para ejecutar las pruebas, utiliza el siguiente comando:
+
+    mvn test
+
+Contribuciones
+--------------
+
+Si deseas contribuir a este proyecto, por favor sigue los siguientes pasos:
+
+1.  Haz un fork del repositorio.
+
+2.  Crea una nueva rama (git checkout -b feature/nueva-funcionalidad).
+
+3.  Realiza tus cambios y haz commit (git commit -am 'Añade nueva funcionalidad').
+
+4.  Haz push a la rama (git push origin feature/nueva-funcionalidad).
+
+5.  Abre un Pull Request.
+
+---
+
+## Construido con
+
+- **Java**: El lenguaje de programación principal utilizado para implementar el servidor web.
+- **Maven**: Herramienta de gestión y construcción de proyectos para manejar las dependencias y compilar el código.
+- **Java Networking**: Librerías estándar de Java para manejar conexiones de red y protocolos HTTP.
+- **Git**: Sistema de control de versiones para gestionar el código fuente.
+- **HTML/CSS/JavaScript**: Tecnologías front-end utilizadas para crear la aplicación web de prueba.
+- **JUnit**: Framework para realizar pruebas unitarias y asegurar la calidad del código.
+
+---
+
+## Autor
+
+* **Samuel Felipe Díaz Mamanche**
+
+See also the list of [contributors](https://github.com/Samuelfdm/TallerWebServer/contributors) who participated in this project.
+
+## Licencia
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
-
